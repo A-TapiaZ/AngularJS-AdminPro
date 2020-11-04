@@ -12,6 +12,7 @@ import {filter, map} from 'rxjs/operators'
 export class BreadcrumbsComponent implements OnInit, OnDestroy {
 
   title:string ='';
+  // El simbolo $ se lo ponemos para especificar que es un observable.
   tituloSubs$: Subscription;
 
   constructor(private router:Router) {
@@ -35,7 +36,7 @@ export class BreadcrumbsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Esto lo hicimios porque al momento de darle logout, ya no es neesario saber la informacion que contiene la ruta.
+    // Esto lo hicimios porque al momento de darle logout, ya no es necesario saber la informacion que contiene la ruta. Y si volvemos a entrar sin refrescar el navegador, se va a disparar otra subscripcion, por lo que cada vez que ingreseramos acumulariamos otro subscribe
     this.tituloSubs$.unsubscribe();
   }
 
