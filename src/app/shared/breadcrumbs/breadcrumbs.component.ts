@@ -39,9 +39,4 @@ export class BreadcrumbsComponent implements OnInit, OnDestroy {
     // Esto lo hicimios porque al momento de darle logout, ya no es necesario saber la informacion que contiene la ruta. Y si volvemos a entrar sin refrescar el navegador, se va a disparar otra subscripcion, por lo que cada vez que ingreseramos acumulariamos otro subscribe
     this.tituloSubs$.unsubscribe();
   }
-
-
-
-
-
 }
