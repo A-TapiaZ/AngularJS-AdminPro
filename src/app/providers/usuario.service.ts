@@ -6,6 +6,7 @@ import { LoginForm } from '../interfaces/loginForm.interface';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { Router } from '@angular/router';
+import { Usuario } from '../models/usuario.model';
 
 const {base_url}= environment;
 
@@ -17,10 +18,20 @@ declare const gapi:any;
 export class UsuarioService {
 
   auth2:any;
+  usuario:Usuario;
 
   constructor(private http: HttpClient,private router:Router, private ngZone:NgZone) {
     this.googleInit();
   }
+
+  get token(): string{
+    return localStorage.getItem('token') || '';
+  }
+
+  get uid(): string{
+    return this.usuario.uid || '';
+  }
+
 
   googleInit(){
 
@@ -52,23 +63,44 @@ export class UsuarioService {
   }
   
   validarToken(): Observable<boolean>{
-    const token = localStorage.getItem('token') || '';
 
     return this.http.get(`${base_url}/login/renew`,{
       headers: {
-        'x-token':token
+        'x-token':this.token
       }
     }).pipe(
-        tap((resp:any) => {
+        map((resp:any) => {
+
+          const {email,google,nombre,role,uid,img=''}= resp.usuario;
+
+          // Ojo esto seria una instancia de la clase por lo que usuario tendria los metodos de la clase Usuario. Sin embargo si lo hubieramos hecho 'this.usuario= resp.usuario' usuario NO tendria los metodos de la clase usuario.
+          this.usuario= new Usuario (nombre,email,'',role,google,img,uid);
+          
           localStorage.setItem('token',resp.token)
+
+          return true
         }),
-        map((resp) => true),
-        catchError(error => of(false))
+        catchError(error => { 
+          console.log(error);
+          return of(false)
+        })
       )
   }
 
   crearUsuario(formData: RegisterForm){
     return this.http.post(`${base_url}/usuarios`, formData);
+  }
+
+  // TODO: capitulo 15.8 en el backend del profesor era obligatorio enviar el rol del usuario que iba a actualizar, en mi back yo no lo puse obligatorio
+  actualizarUsuario(data:{email:string,nombre:string}){
+
+    return this.http.put(`${base_url}/usuarios/${this.uid}`, data,
+    {
+      headers: {
+        'x-token':this.token
+      }
+    });
+
   }
 
   loginUsuario(formData: LoginForm){
